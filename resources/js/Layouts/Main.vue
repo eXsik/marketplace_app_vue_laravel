@@ -12,17 +12,21 @@ const toggleDark = useToggle(isDark);
         <nav
             class="mx-auto flex max-w-screen-lg items-center justify-between p-6"
         >
-            <NavLink routeName="home">Home</NavLink>
+            <NavLink routeName="home" componentName="Home">Home</NavLink>
 
-            <div>
+            <div class="flex items-center space-x-6">
+                <NavLink routeName="register" componentName="Auth/Register">
+                    Register
+                </NavLink>
+
                 <button
                     @click="toggleDark()"
                     class="grid size-6 place-items-center rounded-full outline-none hover:bg-slate-700"
                 >
-                    <span v-if="isDark" class="size-6">
+                    <span v-if="isDark" class="size-5">
                         <SunIcon />
                     </span>
-                    <span v-else class="size-6">
+                    <span v-else class="size-5">
                         <MoonIcon />
                     </span>
                 </button>
