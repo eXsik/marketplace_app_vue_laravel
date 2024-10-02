@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -13,6 +14,10 @@ Route::middleware('guest')->group(callback: function () {
   Route::get('/login', [AuthenticationController::class, 'create'])->name('login');
   Route::post('/login', [AuthenticationController::class, 'store']);
 
+  Route::get('/forgot-password', [ResetPasswordController::class, 'requestPassword'])->name('password.request');
+  Route::post('/forgot-password', [ResetPasswordController::class, 'sendEmail'])->name('password.email');
+  Route::get('/reset-password/{token}', [ResetPasswordController::class, 'resetForm'])->name('password.reset');
+  Route::post('/reset-password', [ResetPasswordController::class, 'updatePassword'])->name('password.update');
 
 });
 
