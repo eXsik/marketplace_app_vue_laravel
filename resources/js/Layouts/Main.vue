@@ -15,6 +15,9 @@ const toggleDark = useToggle(isDark);
             <NavLink routeName="home" componentName="Home">Home</NavLink>
 
             <div class="flex items-center space-x-6">
+                <NavLink routeName="login" componentName="Auth/Login">
+                    Login
+                </NavLink>
                 <NavLink routeName="register" componentName="Auth/Register">
                     Register
                 </NavLink>
