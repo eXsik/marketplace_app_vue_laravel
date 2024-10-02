@@ -39,6 +39,20 @@ const show = ref(false);
                         class="absolute right-0 top-10 z-50 w-40 overflow-hidden rounded-lg bg-slate-800 text-white"
                     >
                         <Link
+                            :href="route('profile.edit')"
+                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
+                        >
+                            Profile
+                        </Link>
+
+                        <Link
+                            :href="route('dashboard')"
+                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
+                        >
+                            Dashboard
+                        </Link>
+
+                        <Link
                             :href="route('logout')"
                             method="post"
                             as="button"
