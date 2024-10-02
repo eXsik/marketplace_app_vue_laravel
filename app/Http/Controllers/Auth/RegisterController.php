@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterStoreRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -21,8 +21,7 @@ class RegisterController extends Controller
         $credentials = $request->validated();
         $user = User::create($credentials);
 
-        // Send verification email
-        // TODO
+        event(new Registered($user));
 
         Auth::login($user);
 
