@@ -2,7 +2,7 @@
     <div
         role="alert"
         v-if="Object.keys(errors).length"
-        class="rounded border-s-4 border-red-500 bg-red-50 p-4"
+        class="mb-4 rounded border-s-4 border-red-500 bg-red-50 p-4"
     >
         <div class="flex items-center gap-2 text-red-800">
             <XCircleIcon class="size-5" />
