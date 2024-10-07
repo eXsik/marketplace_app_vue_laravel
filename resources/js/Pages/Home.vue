@@ -38,6 +38,8 @@ import PaginationLinks from '@/Components/PaginationLinks.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { router, useForm } from '@inertiajs/vue3';
 
+const params = route().params;
+
 const props = defineProps({
     listings: Object,
     searchTerm: String,
@@ -50,6 +52,7 @@ const form = useForm({
 const handleSearch = () => {
     router.get(route('home'), {
         search: form.search,
+        user_id: params.user_id,
     });
 };
 </script>
