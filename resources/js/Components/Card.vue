@@ -4,7 +4,7 @@
     >
         <div>
             <!-- image -->
-            <Link href="">
+            <Link :href="route('listing.show', listing.id)">
                 <img
                     :src="
                         listing.image
@@ -75,4 +75,6 @@ const selectTag = (tag) => {
         }),
     );
 };
+
+// console.log('listing', listing);
 </script>

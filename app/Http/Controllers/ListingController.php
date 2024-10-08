@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ListingController extends Controller
@@ -34,7 +35,7 @@ class ListingController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Listing/Create');
     }
 
     /**
@@ -42,7 +43,23 @@ class ListingController extends Controller
      */
     public function store(StoreListingRequest $request)
     {
-        //
+        // $newTags = explode(',', $request->tags);
+        // $newTags = array_map('trim', $newTags);
+        // $newTags = array_filter($newTags);
+        // $newTags = array_unique($newTags);
+        // $newTags = implode(',', $newTags);
+
+        $fields = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $fields['image'] = Storage::disk('public')->put('images/listing', $request->image);
+        }
+
+        $fields['tags'] = implode(',', array_filter(array_map('trim', explode(',', $request->tags))));
+
+        $request->user()->listings()->create($fields);
+
+        return redirect()->route('dashboard')->with('status', 'Listing created successfully.');
     }
 
     /**
@@ -50,7 +67,7 @@ class ListingController extends Controller
      */
     public function show(Listing $listing)
     {
-        //
+        return Inertia::render('Listing/Show', ['listing' => $listing, 'user' => $listing->user->only(['name', 'id'])]);
     }
 
     /**

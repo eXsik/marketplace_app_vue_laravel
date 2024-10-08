@@ -1,0 +1,102 @@
+<template>
+    <Head title="- Listing Detail" />
+    <Container class="flex gap-4">
+        <div class="w-1/4 overflow-hidden rounded-md">
+            <img
+                :src="
+                    listing.image
+                        ? `/storage/${listing.image}`
+                        : '/storage/images/listing/default.jpg'
+                "
+                :alt="listing.title + ' image'"
+                class="h-full w-full object-cover object-center"
+            />
+        </div>
+
+        <div class="w-3/4">
+            <div class="mb-6">
+                <div class="mb-2 flex items-end justify-between">
+                    <p class="w-full border-b pb-2 text-slate-400">
+                        Listing detail:
+                    </p>
+
+                    <div>edit delete buttons</div>
+                </div>
+                <h3 class="mb-4 text-xl font-bold">{{ listing.title }}</h3>
+                <p class="text-slate-700">{{ listing.description }}</p>
+            </div>
+
+            <div class="mb-6">
+                <p class="mb-2 w-full border-b pb-2 text-slate-400">
+                    Contact info:
+                </p>
+
+                <div
+                    v-if="listing.email"
+                    class="mb-2 flex items-center gap-2 text-sm"
+                >
+                    <AtSymbolIcon class="inline-block size-4 text-slate-800" />
+                    <p>Email</p>
+                    <a :href="`mailto:${listing.email}`" class="text-link">
+                        {{ listing.email }}
+                    </a>
+                </div>
+
+                <div
+                    v-if="listing.link"
+                    class="mb-2 flex items-center gap-2 text-sm"
+                >
+                    <ShareIcon class="inline-block size-4 text-slate-800" />
+                    <p>Link</p>
+                    <a
+                        :href="listing.link"
+                        class="text-link"
+                        target="_blank"
+                        rel="nofollow"
+                    >
+                        {{ listing.link }}
+                    </a>
+                </div>
+                <div
+                    v-if="listing.link"
+                    class="mb-2 flex items-center gap-2 text-sm"
+                >
+                    <UserIcon class="inline-block size-4 text-slate-800" />
+                    <p>Listed by:</p>
+                    <Link
+                        :href="route('home', { user_id: user.id })"
+                        class="text-link"
+                    >
+                        {{ user.name }}
+                    </Link>
+                </div>
+            </div>
+
+            <div v-if="listing.tags" class="mb-6">
+                <p class="mb-2 w-full border-b pb-2 text-slate-400">Tags:</p>
+
+                <div class="flex items-center gap-3">
+                    <div v-for="tag in listing.tags.split(',')" :key="tag">
+                        <Link
+                            :href="route('home', { tag })"
+                            class="rounded-full bg-slate-500 px-2 py-px text-white transition-colors hover:bg-slate-700 dark:hover:bg-slate-800"
+                        >
+                            {{ tag }}
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Container>
+</template>
+
+<script setup>
+import Container from '@/Components/Container.vue';
+import { AtSymbolIcon, ShareIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { Link } from '@inertiajs/vue3';
+
+defineProps({
+    listing: Object,
+    user: Object,
+});
+</script>
