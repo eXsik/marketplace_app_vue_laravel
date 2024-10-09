@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreListingRequest;
 use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
+use App\Services\ImageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,17 +13,22 @@ use Inertia\Inertia;
 
 class ListingController extends Controller
 {
+
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $listings = Listing::whereHas('user', function (Builder $query) {
-            $query->where('role', '!=', 'suspended');
-        })
+        $listings = Listing::notSuspended()
+            ->approved()
             ->with('user')
-            ->where('approved', true)
-            ->filter(request(key: ['search', 'user_id', 'tag']))
+            ->filter(request(['search', 'user_id', 'tag']))
             ->latest()
             ->paginate(6)
             ->withQueryString();
@@ -52,10 +58,10 @@ class ListingController extends Controller
         $fields = $request->validated();
 
         if ($request->hasFile('image')) {
-            $fields['image'] = Storage::disk('public')->put('images/listing', $request->image);
+            $fields['image'] = $this->imageService->upload($request->image, 'images/listing');
         }
 
-        $fields['tags'] = implode(',', array_filter(array_map('trim', explode(',', $request->tags))));
+        $fields['tags'] = Listing::processTags($request->tags);
 
         $request->user()->listings()->create($fields);
 
@@ -94,20 +100,19 @@ class ListingController extends Controller
         if ($request->hasFile('image')) {
 
             if ($listing->image) {
-                Storage::disk('public')->delete($listing->image);
+                $this->imageService->delete($listing->image);
             }
 
-            $fields['image'] = Storage::disk('public')->put('images/listing', $request->image);
+            $fields['image'] = $this->imageService->upload($request->image, 'images/listing');
         } else {
             $fields['image'] = $listing->image;
         }
 
-        $fields['tags'] = implode(',', array_filter(array_map('trim', explode(',', $request->tags))));
+        $fields['tags'] = $listing->processTags($request->tags);
 
         $listing->update($fields);
 
         return redirect()->route('dashboard')->with('status', 'Listing updated successfully.');
-
     }
 
     /**

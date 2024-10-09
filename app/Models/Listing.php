@@ -18,6 +18,18 @@ class Listing extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function scopeNotSuspended($query)
+    {
+        return $query->whereHas('user', function (Builder $query) {
+            $query->where('role', '!=', 'suspended');
+        });
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approved', true);
+    }
+
     public function scopeFilter(Builder $query, array $filters)
     {
         if ($filters['search'] ?? false) {
@@ -35,4 +47,10 @@ class Listing extends Model
             $query->where('tags', 'like', '%' . request('tag') . '%');
         }
     }
+
+    public static function processTags($tags): string
+    {
+        return implode(',', array_filter(array_map('trim', explode(',', $tags))));
+    }
+
 }
