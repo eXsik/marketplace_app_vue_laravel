@@ -49,11 +49,6 @@ class ListingController extends Controller
      */
     public function store(StoreListingRequest $request)
     {
-        // $newTags = explode(',', $request->tags);
-        // $newTags = array_map('trim', $newTags);
-        // $newTags = array_filter($newTags);
-        // $newTags = array_unique($newTags);
-        // $newTags = implode(',', $newTags);
 
         $fields = $request->validated();
 
@@ -89,12 +84,6 @@ class ListingController extends Controller
      */
     public function update(UpdateListingRequest $request, Listing $listing)
     {
-        // $newTags = explode(',', $request->tags);
-        // $newTags = array_map('trim', $newTags);
-        // $newTags = array_filter($newTags);
-        // $newTags = array_unique($newTags);
-        // $newTags = implode(',', $newTags);
-
         $fields = $request->validated();
 
         if ($request->hasFile('image')) {
