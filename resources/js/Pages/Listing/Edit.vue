@@ -1,8 +1,8 @@
 <template>
-    <Head title="- New Listing" />
+    <Head title="- Edit Listing" />
     <Container>
         <div class="mb-6">
-            <Title>Create a new listing</Title>
+            <Title>Edit #{{ listing.id }} listing</Title>
         </div>
 
         <ErrorMessages :errors="form.errors" />
@@ -54,11 +54,14 @@
             </div>
 
             <div class="mt-6 grid gap-6">
-                <ImageUpload @image="(e) => (form.image = e)" />
+                <ImageUpload
+                    @image="(e) => (form.image = e)"
+                    :listingImage="listing.image"
+                />
             </div>
 
             <div class="mt-6">
-                <PrimaryBtn :disabled="form.processing">Create</PrimaryBtn>
+                <PrimaryBtn :disabled="form.processing">Update</PrimaryBtn>
             </div>
         </form>
     </Container>
@@ -73,6 +76,10 @@ import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import TextArea from '@/Components/TextArea.vue';
 import Title from '@/Components/Title.vue';
 
+const props = defineProps({
+    listing: Object,
+});
+
 import {
     AtSymbolIcon,
     NewspaperIcon,
@@ -83,15 +90,16 @@ import {
 import { Head, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    title: null,
-    description: null,
-    tags: null,
-    email: null,
-    link: null,
+    title: props.listing.title,
+    description: props.listing.description,
+    tags: props.listing.tags,
+    email: props.listing.email,
+    link: props.listing.link,
     image: null,
+    _method: 'PUT',
 });
 
 const handleSubmit = () => {
-    form.post(route('listing.store'));
+    form.post(route('listing.update', props.listing.id));
 };
 </script>

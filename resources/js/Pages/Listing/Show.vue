@@ -20,7 +20,14 @@
                         Listing detail:
                     </p>
 
-                    <div>edit delete buttons</div>
+                    <div class="flex items-center gap-4 pl-4">
+                        <Link
+                            :href="route('listing.edit', listing.id)"
+                            class="rounded-md bg-green-500 px-6 py-2 text-white outline-offset-2 outline-green-500 hover:outline"
+                        >
+                            Edit</Link
+                        >
+                    </div>
                 </div>
                 <h3 class="mb-4 text-xl font-bold">{{ listing.title }}</h3>
                 <p class="text-slate-700">{{ listing.description }}</p>
