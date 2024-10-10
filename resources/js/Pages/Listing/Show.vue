@@ -27,6 +27,14 @@
                         >
                             Edit</Link
                         >
+
+                        <button
+                            @click="deleteListing"
+                            type="button"
+                            class="outline-offset-d rounded-md bg-red-500 px-6 py-2 text-white outline-red-500 hover:outline"
+                        >
+                            Delete
+                        </button>
                     </div>
                 </div>
                 <h3 class="mb-4 text-xl font-bold">{{ listing.title }}</h3>
@@ -100,10 +108,16 @@
 <script setup>
 import Container from '@/Components/Container.vue';
 import { AtSymbolIcon, ShareIcon, UserIcon } from '@heroicons/vue/24/outline';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     listing: Object,
     user: Object,
 });
+
+const deleteListing = () => {
+    if (confirm('Are you sure?')) {
+        router.delete(route('listing.destroy', props.listing.id));
+    }
+};
 </script>

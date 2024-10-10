@@ -109,6 +109,12 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
-        //
+        if ($listing->image) {
+            $this->imageService->delete($listing->image);
+        }
+
+        $listing->delete();
+
+        return redirect()->route('dashboard')->with('status', 'Listing deleted successfully.');
     }
 }
