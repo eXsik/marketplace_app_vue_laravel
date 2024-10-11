@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateUserInfoRequest;
+use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 class ProfileController extends Controller
 {
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function edit(Request $request): InertiaResponse
     {
         return Inertia::render('Profile/Edit', [
@@ -21,36 +28,24 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function updateInfo(Request $request): RedirectResponse
+    public function updateInfo(UpdateUserInfoRequest $request): RedirectResponse
     {
-        $fields = $request->validate([
-            'name' => 'required|max:255',
-            'email' => ['required', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($request->user()->id)]
-        ]);
+        $user = $request->user();
+        $fields = $request->validated();
 
-        $request->user()->fill($fields);
+        $this->userService->updateUserInfo($user, $fields);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return redirect()->route('profile.edit');
+        return redirect()->route('profile.edit')->with('status', 'Profile updated successfully.');
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
     {
-        $fields = $request->validate([
-            'current_password' => 'required|current_password',
-            'password' => 'required|confirmed|min:3'
-        ]);
+        $user = $request->user();
+        $fields = $request->validated();
 
-        $request->user()->update([
-            'password' => Hash::make($fields['password'])
-        ]);
+        $this->userService->updateUserPassword($user, $fields);
 
-        return redirect()->route('profile.edit');
+        return redirect()->route('profile.edit')->with('status', 'Password updated successfully.');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -62,7 +57,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-        $user->delete();
+        $this->userService->deleteUser($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

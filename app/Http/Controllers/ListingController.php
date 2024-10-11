@@ -12,7 +12,6 @@ use Inertia\Inertia;
 
 class ListingController extends Controller
 {
-
     protected $imageService;
     protected $listingService;
 
@@ -92,11 +91,7 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
-        if ($listing->image) {
-            $this->imageService->delete($listing->image);
-        }
-
-        $listing->delete();
+        $this->listingService->deleteListing($listing);
 
         return redirect()->route('dashboard')->with('status', 'Listing deleted successfully.');
     }
