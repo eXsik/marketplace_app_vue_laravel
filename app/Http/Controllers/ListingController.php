@@ -6,20 +6,22 @@ use App\Http\Requests\StoreListingRequest;
 use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
 use App\Services\ImageService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\ListingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ListingController extends Controller
 {
 
     protected $imageService;
+    protected $listingService;
 
-    public function __construct(ImageService $imageService)
+    public function __construct(ImageService $imageService, ListingService $listingService)
     {
         $this->imageService = $imageService;
+        $this->listingService = $listingService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -52,13 +54,7 @@ class ListingController extends Controller
 
         $fields = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $fields['image'] = $this->imageService->upload($request->image, 'images/listing');
-        }
-
-        $fields['tags'] = Listing::processTags($request->tags);
-
-        $request->user()->listings()->create($fields);
+        $this->listingService->createListing($request->user, $fields, $request->file('image'));
 
         return redirect()->route('dashboard')->with('status', 'Listing created successfully.');
     }
@@ -86,20 +82,7 @@ class ListingController extends Controller
     {
         $fields = $request->validated();
 
-        if ($request->hasFile('image')) {
-
-            if ($listing->image) {
-                $this->imageService->delete($listing->image);
-            }
-
-            $fields['image'] = $this->imageService->upload($request->image, 'images/listing');
-        } else {
-            $fields['image'] = $listing->image;
-        }
-
-        $fields['tags'] = $listing->processTags($request->tags);
-
-        $listing->update($fields);
+        $this->listingService->updateListing($listing, $fields, $request->file('image'));
 
         return redirect()->route('dashboard')->with('status', 'Listing updated successfully.');
     }
