@@ -1,5 +1,10 @@
 <script setup>
-import { ChevronDownIcon, MoonIcon, SunIcon } from '@heroicons/vue/24/outline';
+import {
+    ChevronDownIcon,
+    LockClosedIcon,
+    MoonIcon,
+    SunIcon,
+} from '@heroicons/vue/24/outline';
 import { useDark, useToggle } from '@vueuse/core';
 import NavLink from '@/Components/NavLink.vue';
 import { usePage } from '@inertiajs/vue3';
@@ -23,7 +28,8 @@ const show = ref(false);
             <NavLink routeName="home" componentName="Home">Home</NavLink>
 
             <div class="flex items-center space-x-6">
-                <div v-if="user" class="relative">
+                <!-- Auth -->
+                <div v-if="user" class="relative flex items-center gap-4">
                     <div
                         class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1 hover:bg-slate-700"
                         :class="{ 'bg-slate-700': show }"
@@ -33,6 +39,15 @@ const show = ref(false);
                         <ChevronDownIcon class="size-4" />
                     </div>
 
+                    <Link
+                        v-if="user.role === 'admin'"
+                        :href="route('admin.index')"
+                        class="grid size-6 place-items-center rounded-full outline-none hover:bg-slate-700"
+                    >
+                        <LockClosedIcon class="inline-block size-5" />
+                    </Link>
+
+                    <!-- User dropdown menu -->
                     <div
                         v-show="show"
                         @click="show = false"
