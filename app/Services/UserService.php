@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 

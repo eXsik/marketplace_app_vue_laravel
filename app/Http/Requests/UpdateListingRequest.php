@@ -22,7 +22,12 @@ class UpdateListingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => ['required', 'max:255'],
+            'description' => ['required'],
+            'tags' => ['nullable', 'string'],
+            'email' => ['nullable', 'email'],
+            'link' => ['nullable', 'url'],
+            'image' => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp'],
         ];
     }
 }

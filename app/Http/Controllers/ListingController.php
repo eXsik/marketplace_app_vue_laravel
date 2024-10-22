@@ -66,8 +66,9 @@ class ListingController extends Controller implements HasMiddleware
     {
         Gate::authorize('create', Listing::class);
         $fields = $request->validated();
+        $user = Auth::user();
 
-        $this->listingService->createListing($request->user, $fields, $request->file('image'));
+        $this->listingService->createListing($user, $fields, $request->file('image'));
 
         return redirect()->route('dashboard')->with('status', 'Listing created successfully.');
     }

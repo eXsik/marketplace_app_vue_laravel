@@ -27,7 +27,6 @@ class ListingService
   public function updateListing(Listing $listing, $fields, $image = null): void
   {
     if ($image) {
-
       if ($listing->image) {
         $this->imageService->delete($listing->image);
       }
@@ -37,9 +36,9 @@ class ListingService
       $fields['image'] = $listing->image;
     }
 
-    $fields['tags'] = $listing->processTags($fields['tags'] ?? []);
+    $fields['tags'] = $listing->processTags($listing->tags ?? []);
 
-    $listing->update($fields);
+    $listing->update([...$fields, 'approved' => false]);
   }
 
 
