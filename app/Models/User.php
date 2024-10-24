@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -54,5 +55,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function scopeFilter($query, array $filters): void
+    {
+        if ($filters['search'] ?? false) {
+            $query->where(function ($q): void {
+                $q->where('name', 'like', '%' . request('search') . '%')
+                    ->orWhere('name', 'email', '%' . request('search') . '%');
+            });
+        }
     }
 }
