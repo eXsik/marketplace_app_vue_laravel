@@ -62,8 +62,12 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($filters['search'] ?? false) {
             $query->where(function ($q): void {
                 $q->where('name', 'like', '%' . request('search') . '%')
-                    ->orWhere('name', 'email', '%' . request('search') . '%');
+                    ->orWhere('email', 'like', '%' . request('search') . '%');
             });
+        }
+
+        if ($filters['user_role'] ?? false) {
+            $query->where('role', request('user_role'));
         }
     }
 }

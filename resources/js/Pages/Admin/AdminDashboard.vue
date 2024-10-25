@@ -14,8 +14,40 @@
                     <MagnifyingGlassIcon class="inline-block size-4" />
                 </InputField>
             </form>
+            <Link
+                v-if="params.search"
+                :href="
+                    route('admin.index', {
+                        ...params,
+                        search: null,
+                        page: null,
+                    })
+                "
+                class="flex items-center gap-2 rounded-md bg-indigo-500 px-2 py-[6px] text-white"
+            >
+                {{ params.search }}
+                <XMarkIcon class="inline-block size-4" />
+            </Link>
+        </div>
+
+        <!-- toggle role btn -->
+        <div class="flex items-center gap-2 rounded-md px-2 py-1 text-xs">
+            <input
+                @input="handleToggleRole"
+                :checked="params.user_role"
+                type="checkbox"
+                id="toggleRole"
+                class="border-1 cursor-pointer rounded-md border-slate-700 text-indigo-500 outline-1 ring-indigo-500"
+            />
+            <label
+                for="toggleRole"
+                class="cursor-pinter block cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+                Show suspended users
+            </label>
         </div>
     </div>
+
     <!-- Table -->
     <table
         class="w-full overflow-hidden rounded-lg border-0 bg-white shadow-md dark:bg-slate-800"
@@ -47,7 +79,7 @@
                                     ).length
                                 }}
                             </span>
-                            <CheckCircleIcon class="size-6 text-green-600" />
+                            <CheckCircleIcon class="size-5 text-green-600" />
                         </div>
                         <div class="flex items-center gap-1">
                             <span>
@@ -57,11 +89,18 @@
                                     ).length
                                 }}
                             </span>
-                            <XCircleIcon class="size-6 text-red-600" />
+                            <XCircleIcon class="size-5 text-red-600" />
                         </div>
                     </div>
                 </td>
-                <td class="w-1/6 px-3 py-5 text-right">View link</td>
+                <td class="w-1/6 px-3 py-5 text-right">
+                    <Link
+                        :href="route('user.show', user.id)"
+                        class="px-3 text-indigo-400"
+                    >
+                        <ArrowTopRightOnSquareIcon class="size-5" />
+                    </Link>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -77,9 +116,11 @@ import PaginationLinks from '@/Components/PaginationLinks.vue';
 import RoleSelect from '@/Components/RoleSelect.vue';
 import SessionMessages from '@/Components/SessionMessages.vue';
 import {
+    ArrowTopRightOnSquareIcon,
     CheckCircleIcon,
     MagnifyingGlassIcon,
     XCircleIcon,
+    XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { router, useForm } from '@inertiajs/vue3';
 
@@ -88,16 +129,37 @@ defineProps({
     status: String,
 });
 
+const params = route().params;
+
 const form = useForm({
-    search: '',
+    search: params.search,
 });
 
 const handleSearch = () => {
     router.get(
         route('admin.index', {
             search: form.search,
+            user_role: params.user_role,
         }),
     );
+};
+
+const handleToggleRole = (event) => {
+    if (event.target.checked) {
+        router.get(
+            route('admin.index', {
+                search: form.search,
+                user_role: 'suspended',
+            }),
+        );
+    } else {
+        router.get(
+            route('admin.index', {
+                search: form.search,
+                user_role: null,
+            }),
+        );
+    }
 };
 </script>
 

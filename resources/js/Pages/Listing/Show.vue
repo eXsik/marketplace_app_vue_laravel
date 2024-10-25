@@ -1,5 +1,24 @@
 <template>
     <Head title="- Listing Detail" />
+
+    <!-- ADMIN -->
+
+    <div
+        v-if="$page.props.auth.user.role === 'admin'"
+        class="mb-6 flex items-center justify-between rounded-md bg-white p-6 font-medium dark:bg-slate-800 dark:text-white"
+    >
+        <p>
+            This listing is {{ listing.approved ? 'Approved' : 'Disapproved' }}
+        </p>
+
+        <button
+            @click.prevent="toggleApprove"
+            class="rounded-md bg-slate-600 px-3 py-1 text-white"
+        >
+            {{ listing.approved ? 'Disapprove it' : 'Approve it' }}
+        </button>
+    </div>
+
     <Container class="flex gap-4">
         <div class="w-1/4 overflow-hidden rounded-md">
             <img
@@ -38,7 +57,9 @@
                     </div>
                 </div>
                 <h3 class="mb-4 text-xl font-bold">{{ listing.title }}</h3>
-                <p class="text-slate-700">{{ listing.description }}</p>
+                <p class="text-slate-700 dark:text-slate-100">
+                    {{ listing.description }}
+                </p>
             </div>
 
             <div class="mb-6">
@@ -119,6 +140,16 @@ const props = defineProps({
 const deleteListing = () => {
     if (confirm('Are you sure?')) {
         router.delete(route('listing.destroy', props.listing.id));
+    }
+};
+
+const toggleApprove = () => {
+    let msg = props.listing.approved
+        ? 'Disapprove this listing?'
+        : 'Approve this listing';
+
+    if (confirm(msg)) {
+        router.put(route('admin.approve', props.listing.id));
     }
 };
 </script>
