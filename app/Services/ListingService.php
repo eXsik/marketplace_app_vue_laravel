@@ -19,7 +19,7 @@ class ListingService
       $fields['image'] = $this->imageService->upload($image, 'images/listing');
     }
 
-    $fields['tags'] = Listing::processTags($fields['tags'] ?? []);
+    $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
 
     $user->listings()->create($fields);
   }
@@ -36,7 +36,7 @@ class ListingService
       $fields['image'] = $listing->image;
     }
 
-    $fields['tags'] = $listing->processTags($listing->tags ?? []);
+    $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
 
     $listing->update([...$fields, 'approved' => false]);
   }

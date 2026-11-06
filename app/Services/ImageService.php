@@ -8,7 +8,7 @@ class ImageService
 {
   public function upload($image, $directory)
   {
-    return Storage::disk('public')->put($directory, $image);
+    return $image->store($directory, 'public');
   }
 
   public function delete($path)

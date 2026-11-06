@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UserUpdateRoleRequest extends FormRequest
 {
@@ -22,7 +23,7 @@ class UserUpdateRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => 'string|required'
+            'role' => ['required', 'string', Rule::in(['general', 'admin', 'suspended'])],
         ];
     }
 }

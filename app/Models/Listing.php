@@ -32,19 +32,26 @@ class Listing extends Model
 
     public function scopeFilter(Builder $query, array $filters)
     {
-        if ($filters['search'] ?? false) {
-            $query->where(function ($q) {
-                $q->where('title', 'like', '%' . request('search') . '%')
-                    ->orWhere('description', 'like', '%' . request('search') . '%');
+        if ($search = ($filters['search'] ?? null)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
 
         if ($filters['user_id'] ?? false) {
-            $query->where('user_id', request('user_id'));
+            $query->where('user_id', $filters['user_id']);
         }
 
-        if ($filters['tag'] ?? false) {
-            $query->where('tags', 'like', '%' . request('tag') . '%');
+        if ($tag = trim($filters['tag'] ?? '')) {
+            $escapedTag = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $tag);
+
+            $query->where(function (Builder $query) use ($tag, $escapedTag) {
+                $query->where('tags', $tag)
+                    ->orWhereRaw("tags LIKE ? ESCAPE '!'", [$escapedTag . ',%'])
+                    ->orWhereRaw("tags LIKE ? ESCAPE '!'", ['%,' . $escapedTag . ',%'])
+                    ->orWhereRaw("tags LIKE ? ESCAPE '!'", ['%,' . $escapedTag]);
+            });
         }
 
         if ($filters['disapproved'] ?? false) {
@@ -54,6 +61,10 @@ class Listing extends Model
 
     public static function processTags($tags): string
     {
+        if (!is_string($tags) || trim($tags) === '') {
+            return '';
+        }
+
         return implode(',', array_filter(array_map('trim', explode(',', $tags))));
     }
 

@@ -15,7 +15,10 @@ class AdminController extends Controller
 {
     public function index(): Response
     {
-        $users = User::with('listings')
+        $users = User::withCount([
+            'listings as approved_listings_count' => fn ($query) => $query->where('approved', true),
+            'listings as disapproved_listings_count' => fn ($query) => $query->where('approved', false),
+        ])
             ->filter(request(['search', 'user_role']))
             ->paginate(10)
             ->withQueryString();
