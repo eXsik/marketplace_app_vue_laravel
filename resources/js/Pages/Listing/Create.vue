@@ -1,64 +1,104 @@
 <template>
-    <Head title="- New Listing" />
+    <Head title="Dodaj ogłoszenie" />
     <Container>
         <div class="mb-6">
-            <Title>Create a new listing</Title>
+            <Title>Dodaj ogłoszenie</Title>
+            <p class="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+                Opowiedz o przedmiocie i dodaj zdjęcie, które pokaże jego
+                charakter.
+            </p>
         </div>
 
         <ErrorMessages :errors="form.errors" />
 
         <form @submit.prevent="handleSubmit">
-            <div class="grid grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
                 <InputField
-                    label="Title"
-                    placeholder="My new listing"
+                    id="title"
+                    name="title"
+                    label="Tytuł"
+                    placeholder="Na przykład: Fotel z lat 60."
+                    :required="true"
+                    :error="form.errors.title"
                     v-model="form.title"
                 >
                     <PencilSquareIcon class="inline-block size-4" />
                 </InputField>
 
                 <InputField
-                    label="Tags (separate with comma)"
-                    placeholder="one, two, three"
+                    id="tags"
+                    name="tags"
+                    label="Tagi (oddziel przecinkami)"
+                    placeholder="dom, vintage, meble"
+                    :error="form.errors.tags"
                     v-model="form.tags"
                 >
                     <TagIcon class="inline-block size-4" />
                 </InputField>
             </div>
 
-            <div class="mt-6 grid grid-cols-2 gap-6">
+            <div
+                class="mt-5 grid grid-cols-1 gap-5 sm:mt-6 sm:grid-cols-2 sm:gap-6"
+            >
                 <InputField
-                    label="Email"
-                    placeholder="example@email.com"
+                    id="email"
+                    name="email"
+                    label="E-mail do kontaktu"
+                    placeholder="adres@example.com"
+                    type="email"
+                    autocomplete="email"
+                    :error="form.errors.email"
                     v-model="form.email"
                 >
                     <AtSymbolIcon class="inline-block size-4" />
                 </InputField>
 
                 <InputField
-                    label="External Link"
+                    id="link"
+                    name="link"
+                    label="Link zewnętrzny"
                     placeholder="https://example.com"
+                    type="url"
+                    inputmode="url"
+                    :error="form.errors.link"
                     v-model="form.link"
                 >
                     <ShareIcon class="inline-block size-4" />
                 </InputField>
             </div>
-            <div class="mt-6 grid gap-6">
+            <div class="mt-5 grid gap-5 sm:mt-6 sm:gap-6">
                 <TextArea
-                    label="Description"
-                    placeholder="This is my listing description"
+                    id="description"
+                    name="description"
+                    label="Opis"
+                    placeholder="Opisz stan, historię i najważniejsze cechy przedmiotu."
+                    :required="true"
+                    :error="form.errors.description"
                     v-model="form.description"
                 >
                     <NewspaperIcon class="inline-block size-4" />
                 </TextArea>
             </div>
 
-            <div class="mt-6 grid gap-6">
-                <ImageUpload @image="(e) => (form.image = e)" />
+            <div class="mt-5 grid gap-5 sm:mt-6 sm:gap-6">
+                <ImageUpload
+                    :error="form.errors.image"
+                    @image="(e) => (form.image = e)"
+                />
             </div>
 
-            <div class="mt-6">
-                <PrimaryBtn :disabled="form.processing">Create</PrimaryBtn>
+            <div
+                class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center"
+            >
+                <Link
+                    :href="route('dashboard')"
+                    class="inline-flex min-h-12 items-center justify-center rounded-lg px-5 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                >
+                    Anuluj
+                </Link>
+                <PrimaryBtn :loading="form.processing">
+                    {{ form.processing ? 'Dodawanie…' : 'Dodaj ogłoszenie' }}
+                </PrimaryBtn>
             </div>
         </form>
     </Container>
@@ -80,7 +120,8 @@ import {
     ShareIcon,
     TagIcon,
 } from '@heroicons/vue/24/outline';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { nextTick } from 'vue';
 
 const form = useForm({
     title: null,
@@ -92,6 +133,11 @@ const form = useForm({
 });
 
 const handleSubmit = () => {
-    form.post(route('listing.store'));
+    form.post(route('listing.store'), { onError: focusFirstError });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>

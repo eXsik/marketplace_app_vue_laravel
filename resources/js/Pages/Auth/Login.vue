@@ -1,11 +1,11 @@
 <template>
-    <Head title="- Login" />
+    <Head title="Logowanie" />
     <Container class="max-w-screen-sm">
         <div class="mb-8 text-center">
-            <Title>Login to your account</Title>
+            <Title>Zaloguj się</Title>
             <p class="my-4">
-                Don't have an account?
-                <TextLink label="Register" routeName="register" />
+                Nie masz jeszcze konta?
+                <TextLink label="Utwórz konto" routeName="register" />
             </p>
         </div>
 
@@ -14,12 +14,24 @@
         <ErrorMessages class="mb-4" :errors="form.errors" />
 
         <form class="space-y-6" @submit.prevent="submit">
-            <InputField label="Email" v-model="form.email">
+            <InputField
+                id="email"
+                name="email"
+                label="E-mail"
+                type="email"
+                autocomplete="username"
+                :error="form.errors.email"
+                v-model="form.email"
+            >
                 <AtSymbolIcon class="inline-block size-4" />
             </InputField>
             <InputField
-                label="Password"
+                id="password"
+                name="password"
+                label="Hasło"
                 type="password"
+                autocomplete="current-password"
+                :error="form.errors.password"
                 v-model="form.password"
             >
                 <KeyIcon class="inline-block size-4" />
@@ -27,15 +39,17 @@
 
             <div class="flex items-center justify-between">
                 <Checkbox name="remember" v-model="form.remember">
-                    Remember me
+                    Zapamiętaj mnie
                 </Checkbox>
                 <TextLink
                     routeName="password.request"
-                    label="Forgot password?"
+                    label="Nie pamiętasz hasła?"
                 />
             </div>
 
-            <PrimaryBtn :disabled="form.processing"> Login </PrimaryBtn>
+            <PrimaryBtn :loading="form.processing">
+                {{ form.processing ? 'Logowanie…' : 'Zaloguj się' }}
+            </PrimaryBtn>
         </form>
     </Container>
 </template>
@@ -50,11 +64,12 @@ import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import ErrorMessages from '@/Components/ErrorMessages.vue';
 import Checkbox from '@/Components/Checkbox.vue';
+import { nextTick } from 'vue';
 
 const form = useForm({
     email: '',
     password: '',
-    remembet: null,
+    remember: false,
 });
 
 defineProps({
@@ -63,9 +78,15 @@ defineProps({
 
 const submit = () => {
     form.post(route('login'), {
+        onError: focusFirstError,
         onFinish: () => {
             form.reset('password');
         },
     });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>

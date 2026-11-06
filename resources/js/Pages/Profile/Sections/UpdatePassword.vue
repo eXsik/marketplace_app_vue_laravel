@@ -1,38 +1,46 @@
 <template>
     <Container class="mb-6">
         <div class="mb-6">
-            <Title>Update Password</Title>
-            <p>
-                Ensure that you are using a long, random password to stay
-                secure.
+            <Title>Zmień hasło</Title>
+            <p class="text-sm text-slate-600">
+                Użyj unikalnego hasła o długości co najmniej 8 znaków.
             </p>
         </div>
 
         <ErrorMessages :errors="form.errors" />
 
-        <form class="space-y-6" @submit.prevent="submit">
+        <form class="space-y-5" @submit.prevent="submit">
             <InputField
-                label="Current Password"
-                class="w-1/2"
+                id="current_password"
+                name="current_password"
+                label="Obecne hasło"
                 type="password"
+                autocomplete="current-password"
+                :error="form.errors.current_password"
                 v-model="form.current_password"
             >
                 <KeyIcon class="inline-block size-4" />
             </InputField>
 
             <InputField
-                label="New password"
-                class="w-1/2"
+                id="password"
+                name="password"
+                label="Nowe hasło"
                 type="password"
+                autocomplete="new-password"
+                :error="form.errors.password"
                 v-model="form.password"
             >
                 <KeyIcon class="inline-block size-4" />
             </InputField>
 
             <InputField
-                label="Confirm Password"
-                class="w-1/2"
+                id="password_confirmation"
+                name="password_confirmation"
+                label="Powtórz nowe hasło"
                 type="password"
+                autocomplete="new-password"
+                :error="form.errors.password_confirmation"
                 v-model="form.password_confirmation"
             >
                 <KeyIcon class="inline-block size-4" />
@@ -40,10 +48,12 @@
 
             <SessionMessages
                 v-if="form.recentlySuccessful"
-                status="Password Saved!"
+                status="Hasło zostało zmienione."
             />
 
-            <PrimaryBtn :disabled="form.processing">Save</PrimaryBtn>
+            <PrimaryBtn :loading="form.processing">
+                {{ form.processing ? 'Zapisywanie…' : 'Zmień hasło' }}
+            </PrimaryBtn>
         </form>
     </Container>
 </template>
@@ -54,10 +64,10 @@ import ErrorMessages from '@/Components/ErrorMessages.vue';
 import InputField from '@/Components/InputField.vue';
 import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import SessionMessages from '@/Components/SessionMessages.vue';
-// import SessionMessages from '@/Components/SessionMessages.vue';
 import Title from '@/Components/Title.vue';
 import { KeyIcon } from '@heroicons/vue/24/outline';
 import { useForm } from '@inertiajs/vue3';
+import { nextTick } from 'vue';
 
 const form = useForm({
     current_password: '',
@@ -68,8 +78,14 @@ const form = useForm({
 const submit = () => {
     form.put(route('profile.password'), {
         preserveScroll: true,
+        onError: focusFirstError,
         onFinish: () => form.reset(),
     });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>
 

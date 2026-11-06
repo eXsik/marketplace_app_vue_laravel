@@ -1,127 +1,163 @@
 <template>
-    <Head title="- Dashboard" />
-    <SessionMessages :status="status" class="my-4" />
+    <Head title="Moje ogłoszenia" />
+    <SessionMessages :status="status" class="mb-6" />
 
-    <div v-if="listings">
-        <div v-if="Object.keys(listings.data).length">
-            <div class="mb-6">
-                <!-- heading -->
-                <div class="mb-4 flex items-center justify-between">
-                    <Title>Your latest listings</Title>
-                    <div class="flex items-center gap-4 text-xs">
-                        <p class="flex items-center gap-2">
-                            Approved
-                            <CheckCircleIcon class="size-6 text-green-600" />
-                        </p>
-                        <p class="flex items-center gap-2">
-                            Pending approval
-                            <XCircleIcon class="size-6 text-red-600" />
-                        </p>
-                    </div>
-                </div>
+    <section v-if="listings">
+        <div
+            class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+        >
+            <div>
+                <Title>Moje ogłoszenia</Title>
+                <p class="mt-1 text-sm text-slate-600">
+                    Zarządzaj swoimi ofertami i ich widocznością.
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
+                <p class="flex items-center gap-2">
+                    <CheckCircleIcon
+                        aria-hidden="true"
+                        class="size-5 text-emerald-700"
+                    />
+                    Opublikowane
+                </p>
+                <p class="flex items-center gap-2">
+                    <ClockIcon
+                        aria-hidden="true"
+                        class="size-5 text-amber-700"
+                    />
+                    Oczekują na akceptację
+                </p>
+            </div>
+        </div>
 
-                <!-- Table -->
-                <table
-                    class="w-full table-fixed border-collapse overflow-hidden rounded-md bg-white text-sm shadow-lg ring-1 ring-slate-300 dark:ring-slate-600"
+        <div
+            v-if="listings.data.length"
+            class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"
+        >
+            <table class="w-full min-w-[620px] border-collapse text-sm">
+                <thead
+                    class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
                 >
-                    <thead
-                        class="bg-slate-300 text-xs uppercase text-slate-600 dark:bg-slate-900 dark:text-slate-400"
-                    >
-                        <tr>
-                            <th class="w-3/4 p-3 text-left">Listing Title</th>
-                            <th class="w-1/4 py-3 pr-3 text-right">View</th>
-                            <th class="w-1/5 py-3 pr-3 text-right">Edit</th>
-                            <th class="w-1/5 py-3 pr-3 text-right">Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="listing in listings.data"
-                            :key="listing.id"
-                            class="border-b border-slate-200 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-600"
-                        >
-                            <td class="w-3/4 p-3 text-left">
-                                <div class="flex items-center gap-2">
-                                    <img
-                                        :src="
-                                            listing.image
-                                                ? `/storage/${listing.image}`
-                                                : '/storage/images/listing/default.jpg'
-                                        "
-                                        alt=""
-                                        class="size-12 object-cover object-center"
-                                    />
-                                    <h4
-                                        class="flex items-center gap-3 font-bold"
-                                    >
-                                        <template v-if="listing.approved">
-                                            <CheckCircleIcon
-                                                class="size-6 min-w-6 text-green-600"
-                                            />
-                                        </template>
-                                        <template v-else>
-                                            <XCircleIcon
-                                                class="size-6 min-w-6 text-red-600"
-                                            />
-                                        </template>
-                                        {{ listing.title }}
-                                    </h4>
-                                </div>
-                            </td>
-                            <td
-                                class="w-1/4 py-3 pr-3 text-right text-indigo-500"
+                    <tr>
+                        <th class="p-4 text-left">Ogłoszenie</th>
+                        <th class="p-4 text-left">Status</th>
+                        <th class="p-4 text-right">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr v-for="listing in listings.data" :key="listing.id">
+                        <td class="p-4">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <img
+                                    :src="listingImageUrl(listing.image)"
+                                    alt=""
+                                    class="size-14 shrink-0 rounded-lg object-cover"
+                                />
+                                <span class="max-w-md font-bold text-slate-800">
+                                    {{ listing.title }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <span
+                                class="inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 text-xs font-bold"
+                                :class="
+                                    listing.approved
+                                        ? 'bg-emerald-50 text-emerald-800'
+                                        : 'bg-amber-50 text-amber-800'
+                                "
                             >
+                                <CheckCircleIcon
+                                    v-if="listing.approved"
+                                    aria-hidden="true"
+                                    class="size-4"
+                                />
+                                <ClockIcon
+                                    v-else
+                                    aria-hidden="true"
+                                    class="size-4"
+                                />
+                                {{
+                                    listing.approved
+                                        ? 'Opublikowane'
+                                        : 'Oczekuje na akceptację'
+                                }}
+                            </span>
+                        </td>
+                        <td class="p-3 text-right">
+                            <div class="flex justify-end gap-1">
                                 <Link
                                     v-if="listing.approved"
                                     :href="route('listing.show', listing.id)"
+                                    class="inline-flex min-h-11 items-center rounded-lg px-3 font-semibold text-blue-800 hover:bg-blue-50"
                                 >
-                                    View
+                                    Zobacz
                                 </Link>
-                            </td>
-                            <td
-                                class="w-1/5 py-3 pr-3 text-right text-indigo-500"
-                            >
-                                <Link :href="route('listing.edit', listing.id)">
-                                    Edit
+                                <Link
+                                    :href="route('listing.edit', listing.id)"
+                                    class="inline-flex min-h-11 items-center rounded-lg px-3 font-semibold text-blue-800 hover:bg-blue-50"
+                                >
+                                    Edytuj
                                 </Link>
-                            </td>
-                            <td class="w-1/5 py-3 pr-3 text-right text-red-500">
                                 <button
                                     type="button"
+                                    class="inline-flex min-h-11 items-center rounded-lg px-3 font-semibold text-red-700 hover:bg-red-50"
                                     @click="deleteListing(listing.id)"
                                 >
-                                    Delete
+                                    Usuń
                                 </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <PaginationLinks :paginator="listings" />
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div v-else>You have no listings!</div>
-    </div>
-    <p v-else>
-        Due to violation of our terms your account has been suspended, please
-        contact us at <span class="text-link">email@admin.com</span>
-    </p>
+
+        <div v-else class="empty-state">
+            <PlusIcon aria-hidden="true" class="size-8 text-blue-700" />
+            <h2>Nie masz jeszcze ogłoszeń</h2>
+            <p>
+                Dodaj pierwsze i pokaż innym przedmiot, któremu dasz drugie
+                życie.
+            </p>
+            <Link :href="route('listing.create')" class="empty-state-link">
+                Dodaj ogłoszenie
+            </Link>
+        </div>
+
+        <div v-if="listings.data.length" class="mt-6">
+            <PaginationLinks :paginator="listings" />
+        </div>
+    </section>
+
+    <section
+        v-else
+        class="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-950"
+    >
+        <h2 class="font-bold">Konto jest zawieszone</h2>
+        <p class="mt-1 text-sm">
+            Nie możesz teraz zarządzać ogłoszeniami. Skontaktuj się z
+            administracją, aby wyjaśnić sytuację.
+        </p>
+    </section>
 </template>
 
 <script setup>
+import { listingImageUrl } from '@/utils/listingImage';
 import PaginationLinks from '@/Components/PaginationLinks.vue';
 import SessionMessages from '@/Components/SessionMessages.vue';
 import Title from '@/Components/Title.vue';
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline';
-import { router } from '@inertiajs/vue3';
-defineProps({
-    listings: Object,
-    status: String,
-});
+import {
+    CheckCircleIcon,
+    ClockIcon,
+    PlusIcon,
+} from '@heroicons/vue/24/outline';
+import { Link, router } from '@inertiajs/vue3';
+
+defineProps({ listings: Object, status: String });
 
 const deleteListing = (id) => {
-    if (confirm('Are you sure?')) {
+    if (confirm('Czy na pewno chcesz usunąć to ogłoszenie?')) {
         router.delete(route('listing.destroy', id));
     }
 };

@@ -1,16 +1,22 @@
 <template>
-    <Head :title="`- ${user.name} Listings`" />
+    <Head :title="`Ogłoszenia: ${user.name}`" />
 
     <SessionMessages :status="status" class="my-4" />
     <!-- Heading -->
     <div class="mb-6">
-        <Title>{{ user.name }} latest listings</Title>
-        <div class="flex items-end justify-between">
+        <Title>Ogłoszenia: {{ user.name }}</Title>
+        <p class="mb-4 mt-1 text-sm text-slate-600">
+            Przeglądaj oferty i zarządzaj ich publikacją.
+        </p>
+        <div
+            class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+        >
             <div class="flex items-end gap-2">
                 <form @submit.prevent="handleSearch">
                     <InputField
                         label=""
-                        placeholder="Search..."
+                        ariaLabel="Szukaj ogłoszeń użytkownika"
+                        placeholder="Szukaj ogłoszeń…"
                         v-model="form.search"
                     >
                         <MagnifyingGlassIcon class="inline-block size-4" />
@@ -33,64 +39,85 @@
                 </Link>
             </div>
             <!-- toggle approve listing btn -->
-            <div class="flex items-center gap-2 rounded-md px-2 py-1 text-xs">
+            <div class="flex min-h-11 items-center gap-3 rounded-md text-xs">
                 <input
                     @input="handleShowDisapproved"
                     :checked="params.disapproved"
                     type="checkbox"
                     id="showDisapproved"
-                    class="border-1 cursor-pointer rounded-md border-slate-700 text-indigo-500 outline-1 ring-indigo-500"
+                    class="size-5 cursor-pointer rounded border-slate-400 text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700"
                 />
                 <label
                     for="showDisapproved"
-                    class="cursor-pinter block cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
+                    class="flex min-h-11 cursor-pointer items-center text-sm font-medium text-slate-700"
                 >
-                    Show disapproved listings
+                    Pokaż odrzucone ogłoszenia
                 </label>
             </div>
         </div>
     </div>
-    <table
-        class="w-full overflow-hidden rounded-lg bg-white ring-1 ring-slate-300 dark:bg-slate-800"
+    <div
+        v-if="listings.data.length"
+        class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"
     >
-        <thead>
-            <tr class="bg-slate-600 text-left text-xs uppercase text-slate-300">
-                <th class="w-4/6 p-3">Title</th>
-                <th class="w-2/6 p-3 text-center">Approved</th>
-                <th class="w-1/6 p-3 text-right">View</th>
-            </tr>
-        </thead>
+        <table class="w-full min-w-[620px] overflow-hidden bg-white">
+            <thead>
+                <tr
+                    class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-600"
+                >
+                    <th class="w-4/6 p-4 text-left">Ogłoszenie</th>
+                    <th class="w-2/6 p-4 text-center">Status</th>
+                    <th class="w-1/6 p-4 text-right">Podgląd</th>
+                </tr>
+            </thead>
 
-        <tbody class="divide-y divide-dashed divide-slate-300">
-            <tr v-for="listing in listings.data" :key="listing.id">
-                <td class="px-3 py-5">{{ listing.title }}</td>
-                <td class="h-full px-3 py-5 text-center text-2xl">
-                    <button @click.prevent="toggleApprove(listing)">
-                        <template v-if="listing.approved">
-                            <CheckCircleIcon
-                                class="inline-block size-6 text-green-600"
-                            />
-                        </template>
-                        <template v-else>
-                            <XCircleIcon
-                                class="inline-block size-6 text-red-600"
-                            />
-                        </template>
-                    </button>
-                </td>
-                <td class="w-1/6 px-3 py-5 text-right">
-                    <Link
-                        :href="route('listing.show', listing.id)"
-                        class="px-3 text-indigo-400"
-                    >
-                        <ArrowTopRightOnSquareIcon class="size-5" />
-                    </Link>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+            <tbody class="divide-y divide-slate-100">
+                <tr
+                    v-for="listing in listings.data"
+                    :key="listing.id"
+                    class="border-b border-slate-100 last:border-0"
+                >
+                    <td class="px-4 py-4 font-semibold text-slate-800">
+                        {{ listing.title }}
+                    </td>
+                    <td class="h-full px-4 py-3 text-center">
+                        <button
+                            type="button"
+                            :aria-label="`${listing.approved ? 'Odrzuć' : 'Zaakceptuj'} ogłoszenie ${listing.title}`"
+                            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700"
+                            @click.prevent="toggleApprove(listing)"
+                        >
+                            <template v-if="listing.approved">
+                                <CheckCircleIcon
+                                    class="inline-block size-6 text-green-600"
+                                />
+                            </template>
+                            <template v-else>
+                                <XCircleIcon
+                                    class="inline-block size-6 text-red-600"
+                                />
+                            </template>
+                        </button>
+                    </td>
+                    <td class="w-1/6 px-4 py-3 text-right">
+                        <Link
+                            :href="route('listing.show', listing.id)"
+                            :aria-label="`Otwórz ogłoszenie ${listing.title}`"
+                            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-blue-800 hover:bg-blue-50"
+                        >
+                            <ArrowTopRightOnSquareIcon class="size-5" />
+                        </Link>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div v-else class="empty-state">
+        <h2>Brak ogłoszeń do wyświetlenia</h2>
+        <p>Zmień wyszukiwaną frazę lub ustawienia filtra.</p>
+    </div>
     <div class="mt-6">
-        <PaginationLinks :paginator="listings" />
+        <PaginationLinks v-if="listings.data.length" :paginator="listings" />
     </div>
 </template>
 
@@ -149,8 +176,8 @@ const handleShowDisapproved = (event) => {
 
 const toggleApprove = (listing) => {
     let msg = listing.approved
-        ? 'Disapprove this listing?'
-        : 'Approve this listing';
+        ? 'Odrzucić to ogłoszenie?'
+        : 'Zaakceptować to ogłoszenie?';
 
     if (confirm(msg)) {
         router.put(route('admin.approve', listing.id));

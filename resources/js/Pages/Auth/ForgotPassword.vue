@@ -1,25 +1,36 @@
 <template>
-    <Head title="- Forgot Password" />
+    <Head title="Odzyskaj hasło" />
     <Container class="max-w-screen-sm">
         <SessionMessages :status="status" class="my-4" />
 
         <div class="mb-8 text-center">
             <p class="my-4">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
+                Podaj adres e-mail przypisany do konta. Wyślemy Ci link do
+                ustawienia nowego hasła.
             </p>
         </div>
 
         <ErrorMessages class="mb-4" :errors="form.errors" />
 
         <form class="space-y-6" @submit.prevent="submit">
-            <InputField label="Email" v-model="form.email">
+            <InputField
+                id="email"
+                name="email"
+                label="E-mail"
+                type="email"
+                autocomplete="email"
+                :error="form.errors.email"
+                v-model="form.email"
+            >
                 <AtSymbolIcon class="inline-block size-4" />
             </InputField>
 
-            <PrimaryBtn :disabled="form.processing">
-                Send Password Reset Link
+            <PrimaryBtn :loading="form.processing">
+                {{
+                    form.processing
+                        ? 'Wysyłanie…'
+                        : 'Wyślij link do zmiany hasła'
+                }}
             </PrimaryBtn>
         </form>
     </Container>
@@ -33,6 +44,7 @@ import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import ErrorMessages from '@/Components/ErrorMessages.vue';
 import SessionMessages from '@/Components/SessionMessages.vue';
+import { nextTick } from 'vue';
 
 const form = useForm({
     email: '',
@@ -43,6 +55,11 @@ defineProps({
 });
 
 const submit = () => {
-    form.post(route('password.email'));
+    form.post(route('password.email'), { onError: focusFirstError });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>

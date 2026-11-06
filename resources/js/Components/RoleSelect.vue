@@ -1,24 +1,18 @@
 <template>
     <div class="flex items-center gap-2">
         <form class="flex items-center gap-2" @change="handleChangeRole">
-            <label for="roles" class="sr-only">Roles:</label>
+            <label :for="`role-${user.id}`" class="sr-only">
+                Rola użytkownika {{ user.name }}
+            </label>
             <select
+                :id="`role-${user.id}`"
                 v-model="form.role"
-                name="roles"
-                class="block w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                :name="`role-${user.id}`"
+                class="block min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
             >
-                <option value="admin" class="text-slate-800 dark:text-white">
-                    Admin
-                </option>
-                <option value="general" class="text-slate-800 dark:text-white">
-                    General
-                </option>
-                <option
-                    value="suspended"
-                    class="text-slate-800 dark:text-white"
-                >
-                    Suspended
-                </option>
+                <option value="admin">Administrator</option>
+                <option value="general">Użytkownik</option>
+                <option value="suspended">Zawieszony</option>
             </select>
         </form>
     </div>
@@ -36,10 +30,17 @@ const form = useForm({
 });
 
 const handleChangeRole = () => {
-    if (confirm(`Change this user's role to ${form.role}`)) {
+    if (confirm(`Zmienić rolę użytkownika na ${roleLabel(form.role)}?`)) {
         form.put(route('admin.role', props.user.id));
     } else {
         form.role = props.user.role;
     }
 };
+
+const roleLabel = (role) =>
+    ({
+        admin: 'administrator',
+        general: 'użytkownik',
+        suspended: 'zawieszony',
+    })[role] ?? role;
 </script>

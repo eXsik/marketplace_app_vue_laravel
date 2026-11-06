@@ -1,35 +1,55 @@
 <template>
     <Container class="mb-6">
         <div class="mb-6">
-            <Title>Update Information</Title>
-            <p>Update your account's profile information and email address.</p>
+            <Title>Dane profilu</Title>
+            <p class="text-sm text-slate-600">
+                Zarządzaj nazwą i adresem e-mail przypisanym do konta.
+            </p>
         </div>
 
         <ErrorMessages :errors="form.errors" />
 
-        <form class="space-y-6" @submit.prevent="submit">
-            <InputField label="Name" class="w-1/2" v-model="form.name">
+        <form class="space-y-5" @submit.prevent="submit">
+            <InputField
+                id="name"
+                name="name"
+                label="Imię i nazwisko"
+                autocomplete="name"
+                :error="form.errors.name"
+                v-model="form.name"
+            >
                 <IdentificationIcon class="inline-block size-4" />
             </InputField>
-            <InputField label="Email" class="w-1/2" v-model="form.email">
+            <InputField
+                id="email"
+                name="email"
+                label="E-mail"
+                type="email"
+                autocomplete="email"
+                :error="form.errors.email"
+                v-model="form.email"
+            >
                 <AtSymbolIcon class="inline-block size-4" />
             </InputField>
 
             <div v-if="!user.email_verified_at">
                 <SessionMessages :status="status" />
 
-                <p>
-                    Your email address in unverified.
+                <p class="text-sm text-slate-700">
+                    Twój adres e-mail nie został jeszcze potwierdzony.
                     <button
-                        class="font-medium text-indigo-500 underline disabled:cursor-not-allowed disabled:text-slate-400 dark:text-indigo-400"
+                        type="button"
+                        class="inline-flex min-h-11 items-center font-semibold text-blue-800 underline underline-offset-4 disabled:cursor-not-allowed disabled:text-slate-400"
                         @click="resendEmail"
                     >
-                        Click here to re-send the verification email.
+                        Wyślij ponownie link weryfikacyjny
                     </button>
                 </p>
             </div>
 
-            <PrimaryBtn :disabled="form.processing">Save</PrimaryBtn>
+            <PrimaryBtn :loading="form.processing">
+                {{ form.processing ? 'Zapisywanie…' : 'Zapisz dane' }}
+            </PrimaryBtn>
         </form>
     </Container>
 </template>
@@ -43,6 +63,7 @@ import SessionMessages from '@/Components/SessionMessages.vue';
 import Title from '@/Components/Title.vue';
 import { AtSymbolIcon, IdentificationIcon } from '@heroicons/vue/24/outline';
 import { router, useForm } from '@inertiajs/vue3';
+import { nextTick } from 'vue';
 
 const props = defineProps({
     user: Object,
@@ -55,7 +76,12 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.patch(route('profile.update'));
+    form.patch(route('profile.update'), { onError: focusFirstError });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 
 const resendEmail = (event) => {

@@ -1,38 +1,73 @@
 <template>
-    <div>
+    <div class="field-group">
         <label
-            :for="label"
-            class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            v-if="label"
+            :for="fieldId"
+            class="block text-sm font-semibold text-slate-700"
         >
             {{ label }}
         </label>
-        <div class="relative mt-1 rounded-md">
+        <div class="relative mt-1.5">
             <div
-                class="pointer-events-none absolute left-0 top-3 flex items-center pl-3"
+                v-if="$slots.default"
+                aria-hidden="true"
+                class="pointer-events-none absolute left-0 top-3.5 flex items-center pl-3.5 text-slate-400"
             >
-                <span class="grid place-content-center text-sm text-slate-400">
-                    <slot />
-                </span>
+                <slot />
             </div>
             <textarea
-                :name="label"
+                :id="fieldId"
+                :name="name || fieldId"
                 :placeholder="placeholder"
-                rows="6"
+                :rows="rows"
+                :required="required"
+                :aria-label="label ? undefined : ariaLabel || placeholder"
+                :aria-invalid="displayError ? 'true' : undefined"
+                :aria-describedby="
+                    displayError ? `${fieldId}-error` : undefined
+                "
                 v-model="model"
-                class="block w-full rounded-md border-slate-300 pl-9 pr-3 text-sm outline-0 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-1 focus:ring-inset focus:ring-indigo-400 dark:text-slate-900"
+                class="block min-h-36 w-full resize-y rounded-lg border border-slate-300 bg-white px-4 py-3 text-base leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 aria-[invalid=true]:border-red-600 aria-[invalid=true]:focus:ring-red-600/20"
+                :class="$slots.default ? 'pl-11' : ''"
             ></textarea>
         </div>
+        <p
+            v-if="displayError"
+            :id="`${fieldId}-error`"
+            class="mt-1.5 text-sm font-medium text-red-700"
+        >
+            {{ displayError }}
+        </p>
     </div>
 </template>
 
 <script setup>
-const model = defineModel();
+import { computed } from 'vue';
+import { validationMessage } from '@/utils/validationMessage';
 
-defineProps({
+const props = defineProps({
+    id: String,
+    name: String,
     label: String,
-    placeholder: {
-        type: String,
-        default: '',
-    },
+    ariaLabel: String,
+    placeholder: { type: String, default: '' },
+    rows: { type: Number, default: 6 },
+    required: Boolean,
+    error: String,
 });
+
+const model = defineModel();
+const displayError = computed(() =>
+    validationMessage(props.error, props.name || props.id),
+);
+const fieldId = computed(
+    () =>
+        props.id ||
+        `field-${(props.name || props.label || 'textarea')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')}`,
+);
 </script>

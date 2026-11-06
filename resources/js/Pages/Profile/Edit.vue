@@ -1,5 +1,5 @@
 <template>
-    <Head title="- Profile" />
+    <Head title="Profil" />
     <UpdateInfo :user="user" :status="status" />
     <UpdatePassword />
     <DeleteAccount />

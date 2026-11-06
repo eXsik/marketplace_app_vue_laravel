@@ -1,80 +1,65 @@
 <template>
-    <div
-        class="flex h-full flex-col justify-between overflow-hidden rounded-lg bg-white shadow-lg dark:bg-slate-800"
-    >
-        <div>
-            <!-- image -->
-            <Link :href="route('listing.show', listing.id)">
-                <img
-                    :src="
-                        listing.image
-                            ? `/storage/${listing.image}`
-                            : '/storage/images/listing/default.jpg'
-                    "
-                    :alt="listing.name + -' image'"
-                    class="h-48 w-full bg-slate-300 object-cover object-center"
-                />
+    <article class="listing-card">
+        <Link
+            :href="route('listing.show', listing.id)"
+            class="listing-image-link"
+        >
+            <img
+                :src="imageUrl"
+                :alt="listing.title"
+                class="listing-image"
+                loading="lazy"
+            />
+            <span v-if="firstTag" class="listing-image-tag">
+                {{ tagLabel(firstTag) }}
+            </span>
+        </Link>
+
+        <div class="listing-card-content">
+            <Link
+                :href="route('listing.show', listing.id)"
+                class="listing-title"
+            >
+                {{ listing.title }}
             </Link>
+            <p class="listing-description">{{ listing.description }}</p>
 
-            <div class="p-4">
-                <h3 class="mb-2 text-xl font-semibold">
-                    {{ listing.title?.substring(0, 40) }}...
-                </h3>
-
-                <p>
-                    Listed on
-                    {{ new Date(listing.created_at).toLocaleDateString() }} by
-                    <button
-                        class="text-link"
-                        @click="selectUser(listing.user.id)"
-                    >
-                        {{ listing.user.name }}
-                    </button>
-                </p>
-            </div>
-        </div>
-
-        <div v-if="listing.tags" class="flex items-center gap-3 px-4 pb-4">
-            <div v-for="tag in listing.tags.split(',')" :key="tag">
-                <button
-                    @click="selectTag(tag)"
-                    class="rounded-md bg-slate-500 px-2 py-px text-white hover:bg-slate-700 dark:hover:bg-slate-900"
+            <div class="listing-card-footer">
+                <Link
+                    :href="route('home', { user_id: listing.user.id })"
+                    class="listing-seller"
                 >
-                    {{ tag }}
-                </button>
+                    <span class="seller-avatar" aria-hidden="true">
+                        {{ listing.user.name.slice(0, 1).toUpperCase() }}
+                    </span>
+                    <span>{{ listing.user.name }}</span>
+                </Link>
+                <time :datetime="listing.created_at">{{ dateLabel }}</time>
             </div>
         </div>
-    </div>
+    </article>
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { listingImageUrl } from '@/utils/listingImage';
 
-defineProps({
-    listing: Object,
-});
+const props = defineProps({ listing: Object });
+const firstTag = computed(() => props.listing.tags?.split(',')[0]?.trim());
+const imageUrl = computed(() => listingImageUrl(props.listing.image));
+const dateLabel = computed(() =>
+    new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short' }).format(
+        new Date(props.listing.created_at),
+    ),
+);
 
-const params = route().params;
-
-const selectUser = (id) => {
-    router.get(
-        route('home', {
-            user_id: id,
-            search: params.search,
-            tag: params.tag,
-        }),
-    );
+const tagNames = {
+    dom: 'Dom i wnętrza',
+    moda: 'Moda',
+    rowery: 'Rowery',
+    technologia: 'Technologia',
+    ksiazki: 'Książki',
 };
-
-const selectTag = (tag) => {
-    router.get(
-        route('home', {
-            user_id: params.user_id,
-            search: params.search,
-            tag: tag,
-        }),
-    );
-};
-
-// console.log('listing', listing);
+const tagLabel = (tag) => tagNames[tag] ?? tag;
 </script>

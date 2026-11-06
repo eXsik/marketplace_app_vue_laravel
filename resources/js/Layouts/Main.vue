@@ -1,114 +1,99 @@
 <script setup>
-import {
-    ChevronDownIcon,
-    LockClosedIcon,
-    MoonIcon,
-    SunIcon,
-} from '@heroicons/vue/24/outline';
-import { useDark, useToggle } from '@vueuse/core';
-import NavLink from '@/Components/NavLink.vue';
+import { ChevronDownIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const isDark = useDark();
-const toggleDark = useToggle(isDark);
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-
-const show = ref(false);
+const menuOpen = ref(false);
 </script>
 
 <template>
-    <!-- Work around for the click outside modifier -->
-    <div v-show="show" @click="show = false" class="fixed inset-0 z-40"></div>
-    <header class="bg-slate-800 text-white">
-        <nav
-            class="mx-auto flex max-w-screen-lg items-center justify-between p-6"
-        >
-            <NavLink routeName="home" componentName="Home">Home</NavLink>
+    <div class="app-shell">
+        <header class="site-header">
+            <nav class="site-nav" aria-label="Główna nawigacja">
+                <Link :href="route('home')" class="brand-mark">
+                    <span class="brand-symbol" aria-hidden="true">p</span>
+                    <span>po<span class="brand-accent">sąsiedzku</span></span>
+                </Link>
 
-            <div class="flex items-center space-x-6">
-                <!-- Auth -->
-                <div v-if="user" class="relative flex items-center gap-4">
-                    <div
-                        class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1 hover:bg-slate-700"
-                        :class="{ 'bg-slate-700': show }"
-                        @click="show = !show"
+                <div class="desktop-nav-links">
+                    <Link :href="route('home')" class="nav-browse"
+                        >Przeglądaj</Link
                     >
-                        <p>{{ user.name }}</p>
-                        <ChevronDownIcon class="size-4" />
-                    </div>
-
                     <Link
-                        v-if="user.role === 'admin'"
-                        :href="route('admin.index')"
-                        class="grid size-6 place-items-center rounded-full outline-none hover:bg-slate-700"
+                        v-if="user"
+                        :href="route('dashboard')"
+                        class="nav-browse"
                     >
-                        <LockClosedIcon class="inline-block size-5" />
+                        Moje ogłoszenia
                     </Link>
+                </div>
 
-                    <!-- User dropdown menu -->
-                    <div
-                        v-show="show"
-                        @click="show = false"
-                        class="absolute right-0 top-10 z-50 w-40 overflow-hidden rounded-lg bg-slate-800 text-white"
+                <div class="nav-actions">
+                    <Link
+                        v-if="user"
+                        :href="route('listing.create')"
+                        class="nav-create"
                     >
-                        <Link
-                            :href="route('listing.create')"
-                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
+                        <PlusIcon class="size-4" />
+                        <span>Dodaj ogłoszenie</span>
+                    </Link>
+                    <div v-if="user" class="account-menu-wrap">
+                        <button
+                            class="account-button"
+                            :aria-expanded="menuOpen"
+                            aria-label="Otwórz menu konta"
+                            @click="menuOpen = !menuOpen"
                         >
-                            New Listing
-                        </Link>
-                        <Link
-                            :href="route('profile.edit')"
-                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
-                        >
-                            Profile
-                        </Link>
-
-                        <Link
-                            :href="route('dashboard')"
-                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
-                        >
-                            Dashboard
-                        </Link>
-
-                        <Link
-                            :href="route('logout')"
-                            method="post"
-                            as="button"
-                            class="block w-full px-6 py-3 text-left hover:bg-slate-700"
-                        >
-                            Logout
-                        </Link>
+                            <span class="account-avatar">
+                                {{ user.name.slice(0, 1).toUpperCase() }}
+                            </span>
+                            <ChevronDownIcon class="size-4" />
+                        </button>
+                        <div v-if="menuOpen" class="account-menu">
+                            <p class="account-name">{{ user.name }}</p>
+                            <Link :href="route('profile.edit')">Profil</Link>
+                            <Link :href="route('dashboard')">Panel</Link>
+                            <Link
+                                v-if="user.role === 'admin'"
+                                :href="route('admin.index')"
+                            >
+                                Administracja
+                            </Link>
+                            <Link
+                                :href="route('logout')"
+                                method="post"
+                                as="button"
+                            >
+                                Wyloguj się
+                            </Link>
+                        </div>
                     </div>
+                    <template v-else>
+                        <Link :href="route('login')" class="nav-login"
+                            >Zaloguj się</Link
+                        >
+                        <Link :href="route('register')" class="nav-create">
+                            Załóż konto
+                        </Link>
+                    </template>
                 </div>
+            </nav>
+        </header>
 
-                <div v-else class="space-x-4">
-                    <NavLink routeName="login" componentName="Auth/Login">
-                        Login
-                    </NavLink>
-                    <NavLink routeName="register" componentName="Auth/Register">
-                        Register
-                    </NavLink>
-                </div>
+        <main class="page-container">
+            <slot />
+        </main>
 
-                <button
-                    @click="toggleDark()"
-                    class="grid size-6 place-items-center rounded-full outline-none hover:bg-slate-700"
-                >
-                    <span v-if="isDark" class="size-5">
-                        <SunIcon />
-                    </span>
-                    <span v-else class="size-5">
-                        <MoonIcon />
-                    </span>
-                </button>
+        <footer class="site-footer">
+            <div class="site-footer-inner">
+                <Link :href="route('home')" class="brand-mark footer-brand">
+                    <span class="brand-symbol" aria-hidden="true">p</span>
+                    <span>po<span class="brand-accent">sąsiedzku</span></span>
+                </Link>
+                <p>Rzeczy z drugiego obiegu. Historie z pierwszej ręki.</p>
             </div>
-        </nav>
-    </header>
-
-    <main class="mx-auto max-w-screen-lg p-6">
-        <slot />
-    </main>
+        </footer>
+    </div>
 </template>

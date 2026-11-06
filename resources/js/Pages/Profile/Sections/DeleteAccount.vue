@@ -1,40 +1,44 @@
 <template>
     <Container class="mb-6">
         <div class="mb-6">
-            <Title>Delete Account</Title>
-            <p>
-                Once your account is deleted, all of its resources data will be
-                permanently deleted. This action cannot be undone.
+            <Title>Usuń konto</Title>
+            <p class="text-sm leading-6 text-slate-600">
+                Usunięcie konta skasuje również Twoje ogłoszenia. Tej operacji
+                nie można cofnąć.
             </p>
         </div>
 
         <ErrorMessages :errors="form.errors" />
 
-        <div v-if="showDeleteAccount">
-            <form class="space-y-6" @submit.prevent="submit">
+        <div
+            v-if="showDeleteAccount"
+            class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 sm:p-5"
+        >
+            <form class="space-y-5" @submit.prevent="submit">
                 <InputField
-                    label="Confirm Password"
-                    class="w-1/2"
+                    id="delete-password"
+                    name="password"
+                    label="Potwierdź hasłem"
                     type="password"
+                    autocomplete="current-password"
+                    :error="form.errors.password"
                     v-model="form.password"
                 >
                     <KeyIcon class="inline-block size-4" />
                 </InputField>
 
-                <SessionMessages
-                    v-if="form.recentlySuccessful"
-                    status="Password Saved!"
-                />
-
-                <div class="flex items-center gap-4">
-                    <PrimaryBtn :disabled="form.processing">
-                        Confim
+                <div
+                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
+                >
+                    <PrimaryBtn :loading="form.processing">
+                        {{ form.processing ? 'Usuwanie…' : 'Usuń konto' }}
                     </PrimaryBtn>
                     <button
+                        type="button"
                         @click="showDeleteAccount = false"
-                        class="flex items-center justify-center gap-2 rounded-lg border border-slate-950 px-3 py-2 text-slate-950 shadow-md hover:bg-slate-50"
+                        class="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 px-5 text-sm font-semibold text-slate-700 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700"
                     >
-                        Cancel
+                        Anuluj
                     </button>
                 </div>
             </form>
@@ -43,10 +47,10 @@
         <button
             v-if="!showDeleteAccount"
             @click="showDeleteAccount = true"
-            class="flex items-center justify-center gap-2 rounded-lg border border-red-500 px-3 py-2 text-red-500 shadow-md hover:bg-red-50"
+            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-red-300 px-4 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
         >
             <ExclamationTriangleIcon class="inline-block size-4" />
-            Delete Account
+            Usuń konto
         </button>
     </Container>
 </template>
@@ -56,12 +60,10 @@ import Container from '@/Components/Container.vue';
 import ErrorMessages from '@/Components/ErrorMessages.vue';
 import InputField from '@/Components/InputField.vue';
 import PrimaryBtn from '@/Components/PrimaryBtn.vue';
-import SessionMessages from '@/Components/SessionMessages.vue';
-// import SessionMessages from '@/Components/SessionMessages.vue';
 import Title from '@/Components/Title.vue';
 import { ExclamationTriangleIcon, KeyIcon } from '@heroicons/vue/24/outline';
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const showDeleteAccount = ref(false);
 
@@ -72,8 +74,14 @@ const form = useForm({
 const submit = () => {
     form.delete(route('profile.destroy'), {
         preserveScroll: true,
+        onError: focusFirstError,
         onFinish: () => form.reset(),
     });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>
 

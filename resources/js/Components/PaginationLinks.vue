@@ -1,25 +1,31 @@
 <template>
-    <div class="flex items-start justify-between">
-        <div class="flex items-center overflow-hidden rounded-md shadow-lg">
+    <div
+        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+        <nav
+            aria-label="Strony wyników"
+            class="flex max-w-full items-center overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm"
+        >
             <div v-for="(link, index) in paginator.links" :key="index">
                 <component
                     :is="link.url ? 'Link' : 'span'"
                     :href="link.url"
-                    class="grid size-12 place-items-center border-x border-slate-50 bg-white dark:border-slate-800 dark:bg-slate-900"
+                    :aria-label="accessibleLabel(link.label)"
+                    :aria-current="link.active ? 'page' : undefined"
+                    class="grid size-12 shrink-0 place-items-center border-r border-slate-100 text-sm text-slate-600 last:border-r-0"
                     :class="{
-                        'hover:bg-slate-300 dark:hover:bg-slate-500': link.url,
-                        'text-slate-300': !link.url,
-                        'font-bold text-indigo-500 dark:text-indigo-400':
-                            link.active,
+                        'hover:bg-blue-50 hover:text-blue-800': link.url,
+                        'cursor-default text-slate-300': !link.url,
+                        'bg-blue-50 font-bold text-blue-800': link.active,
                     }"
                 >
-                    <span v-html="makeLabel(link.label)"></span
-                ></component>
+                    <span aria-hidden="true">{{ makeLabel(link.label) }}</span>
+                </component>
             </div>
-        </div>
-        <p class="text-sm text-slate-600 dark:text-slate-400">
-            Showing {{ paginator.from }} to {{ paginator.to }} of
-            {{ paginator.total }} results
+        </nav>
+        <p class="text-sm text-slate-600" aria-live="polite">
+            Wyświetlanie {{ paginator.from }}–{{ paginator.to }} z
+            {{ paginator.total }} wyników
         </p>
     </div>
 </template>
@@ -30,12 +36,18 @@ defineProps({
 });
 
 const makeLabel = (label) => {
-    if (label.includes('Previous')) {
-        return '<<';
-    } else if (label.includes('Next')) {
-        return '>>';
+    if (label.toLowerCase().includes('previous')) {
+        return '‹';
+    } else if (label.toLowerCase().includes('next')) {
+        return '›';
     } else {
         return label;
     }
+};
+
+const accessibleLabel = (label) => {
+    if (label.toLowerCase().includes('previous')) return 'Poprzednia strona';
+    if (label.toLowerCase().includes('next')) return 'Następna strona';
+    return `Strona ${label}`;
 };
 </script>

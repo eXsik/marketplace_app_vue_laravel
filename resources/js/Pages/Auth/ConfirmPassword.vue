@@ -1,10 +1,9 @@
 <template>
-    <Head title="- Password Confirmation" />
+    <Head title="Potwierdź hasło" />
     <Container class="max-w-screen-sm">
         <div class="mb-8 text-center">
             <p class="my-4">
-                This is a secure area of the application. Please confirm your
-                password before continuing.
+                To bezpieczna część aplikacji. Potwierdź hasło, aby kontynuować.
             </p>
         </div>
 
@@ -12,14 +11,20 @@
 
         <form class="space-y-6" @submit.prevent="submit">
             <InputField
-                label="Password"
+                id="password"
+                name="password"
+                label="Hasło"
                 type="password"
+                autocomplete="current-password"
+                :error="form.errors.password"
                 v-model="form.password"
             >
                 <KeyIcon class="inline-block size-4" />
             </InputField>
 
-            <PrimaryBtn :disabled="form.processing"> Confirm </PrimaryBtn>
+            <PrimaryBtn :loading="form.processing">
+                {{ form.processing ? 'Sprawdzanie…' : 'Potwierdź hasło' }}
+            </PrimaryBtn>
         </form>
     </Container>
 </template>
@@ -31,6 +36,7 @@ import { KeyIcon } from '@heroicons/vue/24/outline';
 import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import ErrorMessages from '@/Components/ErrorMessages.vue';
+import { nextTick } from 'vue';
 
 const form = useForm({
     password: '',
@@ -38,9 +44,15 @@ const form = useForm({
 
 const submit = () => {
     form.post(route('password.confirm'), {
+        onError: focusFirstError,
         onFinish: () => {
             form.reset();
         },
     });
+};
+
+const focusFirstError = async () => {
+    await nextTick();
+    document.querySelector('[aria-invalid="true"]')?.focus();
 };
 </script>

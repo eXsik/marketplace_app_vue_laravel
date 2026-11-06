@@ -1,20 +1,21 @@
 <template>
-    <Head title="- Email Verification" />
+    <Head title="Potwierdź e-mail" />
 
     <Container class="max-w-screen-sm">
         <SessionMessages :status="status" class="my-4" />
         <div class="mb-8">
             <p>
-                Thanks for singing up! Before getting started, could you verify
-                your email address by clicking on the link we just emailed to
-                you? If you didn't receive the email, we will gladly send you
-                another.
+                Zanim zaczniesz, potwierdź adres e-mail, klikając link, który
+                wysłaliśmy. Jeśli wiadomość nie dotarła, możesz poprosić o
+                ponowne wysłanie.
             </p>
         </div>
 
+        <ErrorMessages :errors="form.errors" />
+
         <form @submit.prevent="submit">
-            <PrimaryBtn :disabled="form.processing">
-                Resend Verification Email
+            <PrimaryBtn :loading="form.processing">
+                {{ form.processing ? 'Wysyłanie…' : 'Wyślij link ponownie' }}
             </PrimaryBtn>
         </form>
     </Container>
@@ -24,6 +25,7 @@
 import Container from '@/Components/Container.vue';
 import PrimaryBtn from '@/Components/PrimaryBtn.vue';
 import SessionMessages from '@/Components/SessionMessages.vue';
+import ErrorMessages from '@/Components/ErrorMessages.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const form = useForm({});
