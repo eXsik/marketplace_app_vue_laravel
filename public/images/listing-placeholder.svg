@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Zdjęcie ogłoszenia">
+  <rect width="640" height="420" fill="#e9edfa"/>
+  <circle cx="510" cy="92" r="58" fill="#f0c77e"/>
+  <path d="M0 328q160-62 320 0t320 0v92H0z" fill="#cbd6f2"/>
+  <path d="M250 170h140v120H250z" rx="12" fill="#315ce8"/>
+  <path d="M220 284h200v27H220zM270 310h20v68h-20zm120 0h20v68h-20z" fill="#202a3d"/>
+  <path d="M282 160a38 38 0 0 1 76 0" fill="none" stroke="#202a3d" stroke-width="15"/>
+</svg>
