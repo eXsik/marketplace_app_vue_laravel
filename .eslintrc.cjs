@@ -11,8 +11,14 @@ module.exports = {
     parserOptions: {
         ecmaVersion: "latest"
     },
+    env: {
+        browser: true,
+        es2022: true
+    },
+    globals: {
+        route: "readonly"
+    },
     rules: {
-        "vue/multi-word-component-names": "off",
-        "no-undef": "off"
+        "vue/multi-word-component-names": "off"
     }
 }
