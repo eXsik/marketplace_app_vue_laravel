@@ -6,42 +6,36 @@ use App\Http\Middleware\NotSuspended;
 use App\Http\Requests\StoreListingRequest;
 use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
-use App\Services\ImageService;
 use App\Services\ListingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ListingController extends Controller implements HasMiddleware
 {
-    protected $imageService;
-    protected $listingService;
+    public function __construct(private readonly ListingService $listingService) {}
 
-    public function __construct(ImageService $imageService, ListingService $listingService)
-    {
-        $this->imageService = $imageService;
-        $this->listingService = $listingService;
-    }
-
-    public static function middleware()
+    public static function middleware(): array
     {
         return [
-            new Middleware(['auth', 'verified', NotSuspended::class], except: ['index', 'show'])
+            new Middleware(['auth', 'verified', NotSuspended::class], except: ['index', 'show']),
         ];
     }
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $listings = Listing::notSuspended()
             ->approved()
             ->with('user')
-            ->filter(request(['search', 'user_id', 'tag']))
+            ->filter($request->only(['search', 'user_id', 'tag']))
             ->latest()
             ->paginate(6)
             ->withQueryString();
@@ -52,7 +46,7 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         Gate::authorize('create', Listing::class);
 
@@ -62,11 +56,11 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreListingRequest $request)
+    public function store(StoreListingRequest $request): RedirectResponse
     {
-        Gate::authorize('create', Listing::class);
         $fields = $request->validated();
-        $user = Auth::user();
+        /** @var \App\Models\User $user */
+        $user = $request->user();
 
         $this->listingService->createListing($user, $fields, $request->file('image'));
 
@@ -76,7 +70,7 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Display the specified resource.
      */
-    public function show(Listing $listing)
+    public function show(Listing $listing): Response
     {
         Gate::authorize('view', $listing);
 
@@ -85,7 +79,7 @@ class ListingController extends Controller implements HasMiddleware
             [
                 'listing' => $listing,
                 'user' => $listing->user->only(['name', 'id']),
-                'canModify' => Auth::user() ? Auth::user()->can('modify', $listing) : false
+                'canModify' => Auth::user() ? Auth::user()->can('modify', $listing) : false,
             ]
         );
     }
@@ -93,7 +87,7 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Listing $listing)
+    public function edit(Listing $listing): Response
     {
         Gate::authorize('modify', $listing);
 
@@ -103,10 +97,8 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateListingRequest $request, Listing $listing)
+    public function update(UpdateListingRequest $request, Listing $listing): RedirectResponse
     {
-        Gate::authorize('modify', $listing);
-
         $fields = $request->validated();
 
         $this->listingService->updateListing($listing, $fields, $request->file('image'));
@@ -117,7 +109,7 @@ class ListingController extends Controller implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Listing $listing)
+    public function destroy(Listing $listing): RedirectResponse
     {
         Gate::authorize('modify', $listing);
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Listing;
 use App\Models\User;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -27,7 +28,7 @@ class ListingControllerTest extends TestCase
         $response = $this->get(route('home'));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn($page) => $page->component('Home')
+        $response->assertInertia(fn ($page) => $page->component('Home')
             ->has('listings'));
     }
 
@@ -86,6 +87,33 @@ class ListingControllerTest extends TestCase
         $this->assertDatabaseMissing('listings', ['id' => $listing->id]);
     }
 
+    public function test_failed_image_replacement_keeps_the_existing_image_and_listing_data(): void
+    {
+        $user = User::factory()->create();
+        $listing = Listing::factory()->for($user)->create([
+            'image' => 'images/listing/old.jpg',
+        ]);
+        Storage::disk('public')->put($listing->image, 'old image contents');
+
+        $disk = \Mockery::mock(FilesystemAdapter::class);
+        $disk->shouldReceive('putFileAs')->andReturn(false);
+        Storage::shouldReceive('disk')->with('public')->andReturn($disk);
+
+        $this->actingAs($user)
+            ->put(route('listing.update', $listing), [
+                'title' => 'Updated title',
+                'description' => 'Updated description',
+                'image' => UploadedFile::fake()->image('new.jpg'),
+            ])
+            ->assertServerError();
+
+        $this->assertDatabaseHas('listings', [
+            'id' => $listing->id,
+            'title' => $listing->title,
+            'image' => 'images/listing/old.jpg',
+        ]);
+    }
+
     public function test_user_cannot_update_or_delete_another_users_listing(): void
     {
         $owner = User::factory()->create();
@@ -104,5 +132,16 @@ class ListingControllerTest extends TestCase
             'id' => $listing->id,
             'title' => $listing->title,
         ]);
+    }
+
+    public function test_user_cannot_open_another_users_listing_edit_form(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $listing = Listing::factory()->for($owner)->create();
+
+        $this->actingAs($otherUser)
+            ->get(route('listing.edit', $listing))
+            ->assertForbidden();
     }
 }

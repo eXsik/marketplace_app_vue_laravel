@@ -3,51 +3,69 @@
 namespace App\Services;
 
 use App\Models\Listing;
+use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use RuntimeException;
 
 class ListingService
 {
-  protected $imageService;
+    public function __construct(private readonly ImageService $imageService) {}
 
-  public function __construct(ImageService $imageService)
-  {
-    $this->imageService = $imageService;
-  }
+    /** @param array<string, mixed> $fields */
+    public function createListing(User $user, array $fields, ?UploadedFile $image = null): Listing
+    {
+        if ($image !== null) {
+            $fields['image'] = $this->storeImage($image);
+        }
 
-  public function createListing($user, $fields, $image = null): void
-  {
-    if ($image) {
-      $fields['image'] = $this->imageService->upload($image, 'images/listing');
+        $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
+
+        return $user->listings()->create($fields);
     }
 
-    $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
+    /** @param array<string, mixed> $fields */
+    public function updateListing(Listing $listing, array $fields, ?UploadedFile $image = null): void
+    {
+        $previousImage = $listing->image;
 
-    $user->listings()->create($fields);
-  }
+        if ($image !== null) {
+            $fields['image'] = $this->storeImage($image);
+        }
 
-  public function updateListing(Listing $listing, $fields, $image = null): void
-  {
-    if ($image) {
-      if ($listing->image) {
-        $this->imageService->delete($listing->image);
-      }
+        $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
 
-      $fields['image'] = $this->imageService->upload($image, 'images/listing');
-    } else {
-      $fields['image'] = $listing->image;
+        try {
+            $listing->update([...$fields, 'approved' => false]);
+        } catch (\Throwable $exception) {
+            if (isset($fields['image']) && $fields['image'] !== $previousImage) {
+                $this->imageService->delete($fields['image']);
+            }
+
+            throw $exception;
+        }
+
+        if ($image !== null && $previousImage !== null) {
+            $this->imageService->delete($previousImage);
+        }
     }
 
-    $fields['tags'] = Listing::processTags($fields['tags'] ?? null);
+    public function deleteListing(Listing $listing): void
+    {
+        if ($listing->image !== null) {
+            $this->imageService->delete($listing->image);
+        }
 
-    $listing->update([...$fields, 'approved' => false]);
-  }
-
-
-  public function deleteListing(Listing $listing): void
-  {
-    if ($listing->image) {
-      $this->imageService->delete($listing->image);
+        $listing->delete();
     }
 
-    $listing->delete();
-  }
+    private function storeImage(UploadedFile $image): string
+    {
+        $path = $this->imageService->upload($image, 'images/listing');
+
+        if ($path === false) {
+            throw new RuntimeException('The listing image could not be stored.');
+        }
+
+        return $path;
+    }
 }
