@@ -88,10 +88,6 @@ Testy korzystają z osobnej bazy MySQL `testing` skonfigurowanej w `phpunit.xml`
 
 GitHub Actions uruchamia te kontrole na pushu i pull requeście. Audyt zależności zgłasza obecnie jedną podatność o niskim poziomie w `deepmerge`; upstream nie opublikował jeszcze poprawionej wersji.
 
-## Przykładowy opis do CV
-
-> Zbudowałem responsywny marketplace w Laravel 11 i Vue 3/Inertia. Zaimplementowałem katalog z wyszukiwaniem i filtrowaniem, pełny cykl życia ogłoszeń z uploadem zdjęć oraz moderację administratora. Dodałem testy feature i CI z lintowaniem, audytem zależności oraz buildem frontendu. Testy: 17 przypadków, 61 asercji.
-
 ## Zakres demonstracyjny
 
 Projekt jest demonstracją portfolio. Nie zawiera płatności ani wewnętrznego czatu; kontakt między użytkownikami odbywa się przez dane podane w ogłoszeniu. Konta demo i przykładowe dane są przeznaczone do lokalnego środowiska Sail.
